@@ -1,6 +1,6 @@
 # Application configuration
 app:
-  name: devops-assignment
+  name: devops
   namespace: devops-assignment
   image:
     repository: asadbekabdinazarov/devops-assignment
