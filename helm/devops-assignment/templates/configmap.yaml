@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "devops-assignment.fullname" . }}-config
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    {{- include "devops-assignment.labels" . | nindent 4 }}
+data:
+  application.yaml: |
+    spring:
+      application:
+        name: {{ .Values.app.name }}
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus
+      endpoint:
+        health:
+          show-details: always
+          probes:
+            enabled: true
+      metrics:
+        export:
+          prometheus:
+            enabled: true

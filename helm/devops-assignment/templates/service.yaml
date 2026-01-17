@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "devops-assignment.fullname" . }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    {{- include "devops-assignment.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.app.service.type }}
+  ports:
+    - port: {{ .Values.app.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "devops-assignment.selectorLabels" . | nindent 4 }}
