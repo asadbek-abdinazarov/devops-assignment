@@ -61,3 +61,17 @@ serviceMonitor:
   interval: 30s
   scrapeTimeout: 10s
   path: /actuator/prometheus
+
+promtail:
+  enabled: true
+
+  config:
+    snippets:
+      pipelineStages:
+        - regex:
+            expression: '^(?P<timestamp>[^ ]+) +(?P<level>INFO|ERROR|WARN|DEBUG)'
+        - labels:
+            level:
+        - timestamp:
+            source: timestamp
+            format: RFC3339Nano
