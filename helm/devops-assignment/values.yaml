@@ -1,7 +1,7 @@
 # Application configuration
 app:
   name: devops-assignment
-  namespace: default
+  namespace: devops-assignment
   image:
     repository: asadbekabdinazarov/devops-assignment
     tag: latest
