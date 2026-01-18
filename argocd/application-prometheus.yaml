@@ -9,7 +9,7 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/your-username/devops-assignment.git  # Update with your Git repository URL
+    repoURL: https://github.com/asadbek-abdinazarov/devops-assignment.git  # Update with your Git repository URL
     targetRevision: HEAD
     path: helm/devops-assignment
     helm:
