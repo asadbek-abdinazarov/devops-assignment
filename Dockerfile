@@ -16,6 +16,10 @@ WORKDIR /app
 
 # Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
+
+# Create data directory and set permissions
+RUN mkdir -p /app/data && chown -R spring:spring /app/data
+
 USER spring:spring
 
 # Copy JAR from build stage
