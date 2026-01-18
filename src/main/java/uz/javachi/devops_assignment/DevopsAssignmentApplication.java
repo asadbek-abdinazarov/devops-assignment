@@ -1,5 +1,6 @@
 package uz.javachi.devops_assignment;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -15,30 +16,8 @@ public class DevopsAssignmentApplication {
         init();
     }
 
+    @PostConstruct
     public static void init() {
         log.info("Devops Assignment Application started");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.info("This is a simople Spring Boot application for DevOps assignment.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.error("Test error log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
-        log.warn("Test warn log message.");
     }
 }
