@@ -136,7 +136,7 @@ public class ProductController {
 
     @PutMapping("/{id}/price")
     @Timed(value = "products.update.price", description = "Time taken to update product price")
-    public ResponseEntity<?> updateProductPrice(@PathVariable Long id, @RequestBody PriceUpdateRequest request) {
+    public ResponseEntity<?> updateProductPrice(@PathVariable Long id, @Valid @RequestBody PriceUpdateRequest request) {
         log.info("Update product price endpoint called: {}", id);
         productRequestCounter.increment();
         
@@ -152,6 +152,8 @@ public class ProductController {
 
     // DTO for price update request
     public static class PriceUpdateRequest {
+        @jakarta.validation.constraints.NotNull(message = "Price is required")
+        @jakarta.validation.constraints.Positive(message = "Price must be positive")
         private Double price;
 
         public Double getPrice() {

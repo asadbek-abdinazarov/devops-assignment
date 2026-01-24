@@ -94,7 +94,19 @@ public class OrderController {
         orderRequestCounter.increment();
         
         try {
-            OrderStatus status = OrderStatus.valueOf(request.getStatus().toUpperCase());
+            if (request.getStatus() == null || request.getStatus().trim().isEmpty()) {
+                orderErrorCounter.increment();
+                return ResponseEntity.badRequest().body("Error: Status is required");
+            }
+            
+            OrderStatus status;
+            try {
+                status = OrderStatus.valueOf(request.getStatus().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                orderErrorCounter.increment();
+                return ResponseEntity.badRequest().body("Error: Invalid status. Valid values are: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED");
+            }
+            
             Order updated = orderService.updateOrderStatus(id, status);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {

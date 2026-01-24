@@ -72,6 +72,10 @@ public class ProductService {
     @Timed(value = "products.service.getById", description = "Time to fetch product by ID")
     public Product getProductById(Long id) {
         return productQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Product ID cannot be null");
+            }
+            
             log.info("Getting product by id: {}", id);
             return productRepository.findById(id).orElse(null);
         });
@@ -80,7 +84,13 @@ public class ProductService {
     @Timed(value = "products.service.create", description = "Time to create product")
     public Product createProduct(Product product) {
         return productQueryTimer.record(() -> {
+            if (product == null) {
+                throw new RuntimeException("Product cannot be null");
+            }
+            
             log.info("Creating new product: {}", product.getName());
+            // Ensure id is null for new product to avoid merge conflicts
+            product.setId(null);
             Product saved = productRepository.save(product);
             productCreateCounter.increment();
             return saved;
@@ -90,15 +100,25 @@ public class ProductService {
     @Timed(value = "products.service.update", description = "Time to update product")
     public Product updateProduct(Long id, Product product) {
         return productQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Product ID cannot be null");
+            }
+            
+            if (product == null) {
+                throw new RuntimeException("Product cannot be null");
+            }
+            
             log.info("Updating product: {}", id);
             Product existing = productRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
             
+            // Update allowed fields only - farmerId cannot be changed
             existing.setName(product.getName());
             existing.setDescription(product.getDescription());
             existing.setPrice(product.getPrice());
             existing.setQuantity(product.getQuantity());
             existing.setCategory(product.getCategory());
+            // Note: farmerId is intentionally not updated to maintain data integrity
             
             Product updated = productRepository.save(existing);
             productUpdateCounter.increment();
@@ -109,6 +129,10 @@ public class ProductService {
     @Timed(value = "products.service.delete", description = "Time to delete product")
     public void deleteProduct(Long id) {
         productQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Product ID cannot be null");
+            }
+            
             log.info("Deleting product: {}", id);
             if (!productRepository.existsById(id)) {
                 throw new RuntimeException("Product not found with id: " + id);
@@ -121,6 +145,10 @@ public class ProductService {
     @Timed(value = "products.service.getByFarmer", description = "Time to fetch products by farmer")
     public List<Product> getProductsByFarmer(String farmerId) {
         return productQueryTimer.record(() -> {
+            if (farmerId == null || farmerId.trim().isEmpty()) {
+                throw new RuntimeException("Farmer ID cannot be null or empty");
+            }
+            
             log.info("Getting products for farmer: {}", farmerId);
             return productRepository.findByFarmerId(farmerId);
         });
@@ -129,7 +157,20 @@ public class ProductService {
     @Timed(value = "products.service.updatePrice", description = "Time to update product price")
     public Product updateProductPrice(Long id, Double newPrice) {
         return productQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Product ID cannot be null");
+            }
+            
+            // Validate price
+            if (newPrice == null) {
+                throw new RuntimeException("Price cannot be null");
+            }
+            if (newPrice <= 0) {
+                throw new RuntimeException("Price must be positive");
+            }
+            
             log.info("Updating product price: {} to {}", id, newPrice);
+            
             Product product = productRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
             

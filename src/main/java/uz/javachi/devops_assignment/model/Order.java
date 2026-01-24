@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
     
     @NotNull(message = "Product ID is required")
@@ -32,9 +33,11 @@ public class Order {
     private Integer quantity;
     
     @Column(name = "total_price")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double totalPrice;
     
     @Enumerated(EnumType.STRING)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private OrderStatus status;
     
     @Column(name = "created_at")

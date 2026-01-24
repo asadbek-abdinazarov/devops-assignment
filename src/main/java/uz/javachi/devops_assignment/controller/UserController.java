@@ -3,6 +3,7 @@ package uz.javachi.devops_assignment.controller;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,7 +80,7 @@ public class UserController {
 
     @PostMapping
     @Timed(value = "users.create", description = "Time taken to create user")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
         log.info("Create user endpoint called");
         userRequestCounter.increment();
         

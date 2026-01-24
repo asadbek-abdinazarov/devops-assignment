@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uz.javachi.devops_assignment.model.Order;
 import uz.javachi.devops_assignment.model.OrderStatus;
 import uz.javachi.devops_assignment.model.Product;
@@ -66,22 +67,47 @@ public class OrderService {
     @Timed(value = "orders.service.getById", description = "Time to fetch order by ID")
     public Order getOrderById(Long id) {
         return orderQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Order ID cannot be null");
+            }
+            
             log.info("Getting order by id: {}", id);
             return orderRepository.findById(id).orElse(null);
         });
     }
 
     @Timed(value = "orders.service.create", description = "Time to create order")
+    @Transactional
     public Order createOrder(Order order) {
         return orderQueryTimer.record(() -> {
+            if (order == null) {
+                throw new RuntimeException("Order cannot be null");
+            }
+            
+            if (order.getProductId() == null) {
+                throw new RuntimeException("Product ID is required");
+            }
+            
+            if (order.getQuantity() == null || order.getQuantity() <= 0) {
+                throw new RuntimeException("Quantity must be positive");
+            }
+            
             log.info("Creating new order for product: {}", order.getProductId());
+            
+            // Ensure id is null for new order to avoid merge conflicts
+            order.setId(null);
             
             // Validate product exists and has enough quantity
             Product product = productRepository.findById(order.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + order.getProductId()));
             
-            if (product.getQuantity() < order.getQuantity()) {
-                throw new RuntimeException("Insufficient product quantity. Available: " + product.getQuantity());
+            if (product.getPrice() == null || product.getPrice() <= 0) {
+                throw new RuntimeException("Product price is invalid");
+            }
+            
+            if (product.getQuantity() == null || product.getQuantity() < order.getQuantity()) {
+                throw new RuntimeException("Insufficient product quantity. Available: " + 
+                    (product.getQuantity() != null ? product.getQuantity() : 0));
             }
             
             // Calculate total price
@@ -105,6 +131,14 @@ public class OrderService {
     @Timed(value = "orders.service.updateStatus", description = "Time to update order status")
     public Order updateOrderStatus(Long id, OrderStatus status) {
         return orderQueryTimer.record(() -> {
+            if (id == null) {
+                throw new RuntimeException("Order ID cannot be null");
+            }
+            
+            if (status == null) {
+                throw new RuntimeException("Order status cannot be null");
+            }
+            
             log.info("Updating order status: {} to {}", id, status);
             Order order = orderRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
@@ -120,6 +154,10 @@ public class OrderService {
     @Timed(value = "orders.service.getByBuyer", description = "Time to fetch orders by buyer")
     public List<Order> getOrdersByBuyer(String buyerId) {
         return orderQueryTimer.record(() -> {
+            if (buyerId == null || buyerId.trim().isEmpty()) {
+                throw new RuntimeException("Buyer ID cannot be null or empty");
+            }
+            
             log.info("Getting orders for buyer: {}", buyerId);
             return orderRepository.findByBuyerId(buyerId);
         });
