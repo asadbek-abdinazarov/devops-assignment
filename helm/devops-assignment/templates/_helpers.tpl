@@ -47,22 +47,3 @@ Selector labels
 app.kubernetes.io/name: {{ include "devops-assignment.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Prometheus labels
-*/}}
-{{- define "devops-assignment.prometheusLabels" -}}
-helm.sh/chart: {{ include "devops-assignment.chart" . }}
-app.kubernetes.io/name: {{ include "devops-assignment.name" . }}-prometheus
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Values.prometheus.image.tag | quote }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Prometheus selector labels
-*/}}
-{{- define "devops-assignment.prometheusSelectorLabels" -}}
-app.kubernetes.io/name: {{ include "devops-assignment.name" . }}-prometheus
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}

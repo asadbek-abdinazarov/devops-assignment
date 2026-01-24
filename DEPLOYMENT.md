@@ -64,12 +64,12 @@ helm uninstall devops-assignment
 
 ```bash
 # Check pods
-kubectl get pods -n default
+kubectl get pods -n devops-assignment
 
 # Check services
-kubectl get svc -n default
+kubectl get svc -n devops-assignment
 
-# Check Prometheus (if enabled)
+# Check Prometheus (manually installed)
 kubectl get pods -n monitoring
 kubectl get svc -n monitoring
 ```
@@ -78,7 +78,7 @@ kubectl get svc -n monitoring
 
 ```bash
 # Port forward to access the application
-kubectl port-forward svc/devops-assignment 8080:8080 -n default
+kubectl port-forward svc/devops-assignment 8080:8080 -n devops-assignment
 
 # Access metrics endpoint
 curl http://localhost:8080/actuator/prometheus
@@ -90,8 +90,11 @@ curl http://localhost:8080/actuator/health
 ### Access Prometheus UI
 
 ```bash
-# Port forward to access Prometheus
-kubectl port-forward svc/devops-assignment-prometheus 9090:9090 -n monitoring
+# Port forward to access Prometheus (use your actual Prometheus service name)
+kubectl port-forward svc/prometheus 9090:9090 -n monitoring
+
+# Or find your Prometheus service name:
+kubectl get svc -n monitoring | grep prometheus
 
 # Open in browser
 open http://localhost:9090
@@ -150,8 +153,8 @@ Login with:
 # Deploy the main application
 kubectl apply -f argocd/application.yaml
 
-# Deploy Prometheus (optional, if not included in main app)
-kubectl apply -f argocd/application-prometheus.yaml
+# Note: Prometheus should be installed separately using your own Helm chart
+# The application only creates ServiceMonitor for Prometheus to discover metrics
 ```
 
 3. **Verify ArgoCD Application:**
@@ -196,8 +199,8 @@ Edit `helm/devops-assignment/values.yaml` to customize:
 - Replica count
 - Resource limits and requests
 - Service type
-- Prometheus configuration
 - Namespace settings
+- ServiceMonitor configuration (for Prometheus discovery)
 
 ### Environment Variables
 
@@ -232,20 +235,20 @@ The application exposes Prometheus metrics at:
 
 ```bash
 # Application logs
-kubectl logs -f deployment/devops-assignment -n default
+kubectl logs -f deployment/devops-assignment -n devops-assignment
 
-# Prometheus logs
-kubectl logs -f deployment/devops-assignment-prometheus -n monitoring
+# Prometheus logs (use your actual Prometheus deployment name)
+kubectl logs -f deployment/prometheus -n monitoring
 ```
 
 ### Check Pod Status
 
 ```bash
 # Describe pod for events
-kubectl describe pod <pod-name> -n default
+kubectl describe pod <pod-name> -n devops-assignment
 
 # Check pod events
-kubectl get events -n default --sort-by='.lastTimestamp'
+kubectl get events -n devops-assignment --sort-by='.lastTimestamp'
 ```
 
 ### ArgoCD Sync Issues
