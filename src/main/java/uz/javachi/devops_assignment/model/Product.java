@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +31,7 @@ public class Product {
     private Double price;
     
     @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
+    @PositiveOrZero(message = "Quantity must be positive or zero")
     private Integer quantity;
     
     private String category;
