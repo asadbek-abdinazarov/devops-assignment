@@ -33,13 +33,9 @@ serviceMonitor:
   scrapeTimeout: 10s
   path: /actuator/prometheus
   # Additional labels for Prometheus to discover this ServiceMonitor
-  # If your Prometheus uses serviceMonitorSelector, add matching labels here
-  # Common patterns: release: prometheus, app: prometheus, or leave empty for all
-  additionalLabels: {}
-  # Example:
-  # additionalLabels:
-  #   release: prometheus
-  #   app: prometheus
+  # kube-prometheus-stack odatda 'release: prometheus' label'ini qidiradi
+  additionalLabels:
+    release: prometheus
 
 promtail:
   enabled: true

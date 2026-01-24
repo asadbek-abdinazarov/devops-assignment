@@ -12,14 +12,14 @@ admin
 Run this command to retrieve the ArgoCD admin password:
 
 ```bash
-kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 ```
 
 ### Access ArgoCD UI
 
 1. Port forward the ArgoCD server:
 ```bash
-kubectl port-forward svc/argocd-server -n argo-cd 8080:443
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 2. Open in browser:

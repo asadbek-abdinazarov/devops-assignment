@@ -8,7 +8,7 @@ This guide covers building, pushing the Docker image, and deploying the applicat
 - Kubernetes cluster (local or cloud)
 - kubectl configured to access your cluster
 - Helm 3.x installed
-- ArgoCD installed in the `argo-cd` namespace
+- ArgoCD installed in the `argocd` namespace
 
 ## Docker Build and Push
 
@@ -108,11 +108,11 @@ Ensure ArgoCD is installed in your cluster:
 
 ```bash
 # Check if ArgoCD is installed
-kubectl get pods -n argo-cd
+kubectl get pods -n argocd
 
 # If not installed, install ArgoCD (example for local cluster)
-kubectl create namespace argo-cd
-kubectl apply -n argo-cd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 ### Get ArgoCD Admin Credentials
@@ -123,14 +123,14 @@ kubectl apply -n argo-cd -f https://raw.githubusercontent.com/argoproj/argo-cd/s
 
 For local Kubernetes cluster:
 ```bash
-kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 ```
 
 **Access ArgoCD UI:**
 
 ```bash
 # Port forward ArgoCD server
-kubectl port-forward svc/argocd-server -n argo-cd 8080:443
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 # Or use NodePort/LoadBalancer if configured
 # Default URL: https://localhost:8080
@@ -161,10 +161,10 @@ kubectl apply -f argocd/application.yaml
 
 ```bash
 # List applications
-kubectl get applications -n argo-cd
+kubectl get applications -n argocd
 
 # Get application details
-kubectl get application devops-assignment -n argo-cd -o yaml
+kubectl get application devops-assignment -n argocd -o yaml
 
 # Check application status via ArgoCD CLI (if installed)
 argocd app get devops-assignment
@@ -255,7 +255,7 @@ kubectl get events -n devops-assignment --sort-by='.lastTimestamp'
 
 ```bash
 # Check application sync status
-kubectl get application devops-assignment -n argo-cd
+kubectl get application devops-assignment -n argocd
 
 # Force sync via CLI
 argocd app sync devops-assignment
