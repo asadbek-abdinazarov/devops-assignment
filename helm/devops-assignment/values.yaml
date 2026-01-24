@@ -4,7 +4,7 @@ app:
   namespace: devops-assignment
   image:
     repository: asadbekabdinazarov/devops-assignment
-    tag: "3d5712db988811fb8ea3c0a72fc462581e3dabf2"
+    tag: "127050cbf54657566f4e610b2f7722767d31c04d"
     pullPolicy: IfNotPresent
   
   replicaCount: 1
