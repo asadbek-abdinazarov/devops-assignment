@@ -46,6 +46,7 @@ public class User {
     
     @PrePersist
     protected void onCreate() {
+        // Always set createdAt to current time (ignore any value from POST request)
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
