@@ -60,7 +60,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Timed(value = "users.get.byid", description = "Time taken to get user by ID")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
         log.info("Get user by id endpoint called: {}", id);
         userRequestCounter.increment();
         
