@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uz.javachi.devops_assignment.model.User;
 import uz.javachi.devops_assignment.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -73,6 +74,7 @@ public class UserService {
             if (userRepository.existsByEmail(user.getEmail())) {
                 throw new RuntimeException("User with email " + user.getEmail() + " already exists");
             }
+            user.setCreatedAt(LocalDateTime.now());
             
             User saved = userRepository.save(user);
             log.info("Created new user: {} (Total: {})", user.getName(), userRepository.count());

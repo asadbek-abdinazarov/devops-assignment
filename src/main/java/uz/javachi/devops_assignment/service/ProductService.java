@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uz.javachi.devops_assignment.model.Product;
 import uz.javachi.devops_assignment.repository.ProductRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -91,6 +92,7 @@ public class ProductService {
             log.info("Creating new product: {}", product.getName());
             // Ensure id is null for new product to avoid merge conflicts
             product.setId(null);
+            product.setCreatedAt(LocalDateTime.now());
             Product saved = productRepository.save(product);
             productCreateCounter.increment();
             return saved;

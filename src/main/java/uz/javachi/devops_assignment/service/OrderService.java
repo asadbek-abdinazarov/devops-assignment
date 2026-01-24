@@ -13,6 +13,7 @@ import uz.javachi.devops_assignment.model.Product;
 import uz.javachi.devops_assignment.repository.OrderRepository;
 import uz.javachi.devops_assignment.repository.ProductRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -113,7 +114,7 @@ public class OrderService {
             // Calculate total price
             order.setTotalPrice(product.getPrice() * order.getQuantity());
             order.setStatus(OrderStatus.PENDING);
-            
+            order.setCreatedAt(LocalDateTime.now());
             // Update product quantity
             product.setQuantity(product.getQuantity() - order.getQuantity());
             productRepository.save(product);
