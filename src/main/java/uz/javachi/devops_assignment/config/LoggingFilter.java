@@ -1,6 +1,5 @@
 package uz.javachi.devops_assignment.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,15 +9,8 @@ import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
-import org.springframework.web.util.WebUtils;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,18 +18,9 @@ import java.util.stream.Collectors;
 public class LoggingFilter extends OncePerRequestFilter {
 
     private static final int MAX_BODY_SIZE = 10000; // 10KB max body size for logging
-    private static final Set<String> SENSITIVE_HEADERS = Set.of(
-            "authorization", "cookie", "x-api-key", "x-auth-token"
-    );
     private static final Set<String> EXCLUDED_PATHS = Set.of(
             "/actuator/health", "/actuator/prometheus", "/h2-console", "/swagger-ui", "/v3/api-docs"
     );
-
-    private final ObjectMapper objectMapper;
-
-    public LoggingFilter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -90,9 +73,7 @@ public class LoggingFilter extends OncePerRequestFilter {
     }
 
     private void setMDCContext(CachedBodyHttpServletRequest request, String requestId) {
-        MDC.put("requestId", requestId);
-        MDC.put("httpMethod", request.getMethod());
-        MDC.put("requestPath", request.getRequestURI());
+        // Only set fields that are needed in the final log output
         MDC.put("queryString", Optional.ofNullable(request.getQueryString()).orElse(""));
         MDC.put("clientIp", getClientIpAddress(request));
         MDC.put("userAgent", Optional.ofNullable(request.getHeader("User-Agent")).orElse(""));
@@ -104,43 +85,31 @@ public class LoggingFilter extends OncePerRequestFilter {
                                    long processingTime,
                                    String requestId) {
         try {
-            Map<String, Object> logData = new HashMap<>();
-            logData.put("logType", "API_REQUEST");
-            logData.put("requestId", requestId);
-            logData.put("timestamp", Instant.now().toString());
-            logData.put("httpMethod", request.getMethod());
-            logData.put("apiUrl", request.getMethod() + " " + request.getRequestURI());
-            logData.put("requestPath", request.getRequestURI());
-            logData.put("queryString", Optional.ofNullable(request.getQueryString()).orElse(""));
-            logData.put("responseCode", statusCode);
-            logData.put("responseTime", processingTime);
-            logData.put("clientIp", getClientIpAddress(request));
-            logData.put("userAgent", Optional.ofNullable(request.getHeader("User-Agent")).orElse(""));
+            // Set MDC for structured logging (will be included in JSON by logback encoder)
+            MDC.put("logType", "API_REQUEST");
+            MDC.put("apiUrl", request.getMethod() + " " + request.getRequestURI());
+            MDC.put("responseCode", String.valueOf(statusCode));
+            MDC.put("responseTime", String.valueOf(processingTime));
 
-            // Request headers (sanitized)
-            logData.put("requestHeaders", sanitizeHeaders(getRequestHeaders(request)));
-
-            // Response headers
-            logData.put("responseHeaders", getResponseHeaders(response));
-
-            // Request body (limited size)
-            String requestBody = getRequestBody(request);
-            if (requestBody != null && !requestBody.isEmpty()) {
-                logData.put("requestBody", sanitizeRequestBody(requestBody));
-            }
-
-            // Response body (limited size)
+            // Response body (limited size) - only this is needed
             String responseBody = getResponseBody(response);
             if (responseBody != null && !responseBody.isEmpty()) {
-                logData.put("responseBody", truncateIfNeeded(responseBody));
+                MDC.put("responseBody", truncateIfNeeded(responseBody));
             }
 
             // Log based on status code
             if (statusCode >= 400) {
-                log.error("API Request Error: {}", objectMapper.writeValueAsString(logData));
+                log.error("API Request Error");
             } else {
-                log.info("API Request completed: {}", objectMapper.writeValueAsString(logData));
+                log.info("API Request completed");
             }
+
+            // Clean up MDC (responseBody will be cleared in finally block)
+            MDC.remove("logType");
+            MDC.remove("apiUrl");
+            MDC.remove("responseCode");
+            MDC.remove("responseTime");
+            MDC.remove("responseBody");
 
         } catch (Exception e) {
             log.warn("Error logging request/response", e);
@@ -149,70 +118,24 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     private void logError(CachedBodyHttpServletRequest request, Exception e, long processingTime, String requestId) {
         try {
-            Map<String, Object> logData = new HashMap<>();
-            logData.put("logType", "API_ERROR");
-            logData.put("requestId", requestId);
-            logData.put("timestamp", Instant.now().toString());
-            logData.put("httpMethod", request.getMethod());
-            logData.put("apiUrl", request.getMethod() + " " + request.getRequestURI());
-            logData.put("requestPath", request.getRequestURI());
-            logData.put("responseTime", processingTime);
-            logData.put("clientIp", getClientIpAddress(request));
-            logData.put("errorType", e.getClass().getSimpleName());
-            logData.put("errorMessage", e.getMessage());
-            logData.put("errorStackTrace", Arrays.toString(e.getStackTrace()));
+            // Set MDC for structured logging
+            MDC.put("logType", "API_ERROR");
+            MDC.put("apiUrl", request.getMethod() + " " + request.getRequestURI());
+            MDC.put("responseTime", String.valueOf(processingTime));
+            MDC.put("errorType", e.getClass().getSimpleName());
+            MDC.put("errorMessage", e.getMessage());
 
-            String requestBody = getRequestBody(request);
-            if (requestBody != null && !requestBody.isEmpty()) {
-                logData.put("requestBody", sanitizeRequestBody(requestBody));
-            }
+            log.error("API Request failed", e);
 
-            log.error("API Request failed: {}", objectMapper.writeValueAsString(logData), e);
+            // Clean up MDC
+            MDC.remove("logType");
+            MDC.remove("apiUrl");
+            MDC.remove("responseTime");
+            MDC.remove("errorType");
+            MDC.remove("errorMessage");
 
         } catch (Exception ex) {
             log.warn("Error logging error", ex);
-        }
-    }
-
-    private Map<String, String> getRequestHeaders(CachedBodyHttpServletRequest request) {
-        Map<String, String> headers = new HashMap<>();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            headers.put(headerName, request.getHeader(headerName));
-        }
-        return headers;
-    }
-
-    private Map<String, String> getResponseHeaders(CachedBodyHttpServletResponse response) {
-        Map<String, String> headers = new HashMap<>();
-        Collection<String> headerNames = response.getHeaderNames();
-        for (String headerName : headerNames) {
-            headers.put(headerName, response.getHeader(headerName));
-        }
-        return headers;
-    }
-
-    private Map<String, String> sanitizeHeaders(Map<String, String> headers) {
-        return headers.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            String key = entry.getKey().toLowerCase();
-                            if (SENSITIVE_HEADERS.contains(key)) {
-                                return "***REDACTED***";
-                            }
-                            return entry.getValue();
-                        }
-                ));
-    }
-
-    private String getRequestBody(CachedBodyHttpServletRequest request) {
-        try {
-            String body = request.getCachedBodyAsString();
-            return truncateIfNeeded(body);
-        } catch (Exception e) {
-            return null;
         }
     }
 
@@ -222,31 +145,6 @@ public class LoggingFilter extends OncePerRequestFilter {
             return truncateIfNeeded(body);
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private String sanitizeRequestBody(String body) {
-        try {
-            // Try to parse as JSON and sanitize sensitive fields
-            if (body.trim().startsWith("{")) {
-                Map<String, Object> json = objectMapper.readValue(body, Map.class);
-                sanitizeJsonObject(json);
-                return objectMapper.writeValueAsString(json);
-            }
-        } catch (Exception e) {
-            // If not JSON or parsing fails, return as is (truncated)
-        }
-        return body;
-    }
-
-    private void sanitizeJsonObject(Map<String, Object> json) {
-        Set<String> sensitiveFields = Set.of("password", "token", "secret", "apiKey", "api_key", "authorization");
-        for (String key : json.keySet()) {
-            if (sensitiveFields.contains(key.toLowerCase())) {
-                json.put(key, "***REDACTED***");
-            } else if (json.get(key) instanceof Map) {
-                sanitizeJsonObject((Map<String, Object>) json.get(key));
-            }
         }
     }
 
