@@ -50,7 +50,8 @@ logging:
     uz.javachi.devops_assignment.config.LoggingFilter: INFO
     org.springframework: WARN
     org.hibernate: WARN
-  file:
-    name: logs/application.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  # File logging disabled by default for Kubernetes compatibility
+  # Kubernetes automatically collects stdout/stderr logs
+  # Uncomment below if file logging is needed (requires volume mount in K8s):
+  # file:
+  #   name: /app/logs/application.log
