@@ -42,3 +42,15 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   packages-to-scan: uz.javachi.devops_assignment.controller
+
+logging:
+  level:
+    root: INFO
+    uz.javachi.devops_assignment: INFO
+    uz.javachi.devops_assignment.config.LoggingFilter: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+  file:
+    name: logs/application.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
