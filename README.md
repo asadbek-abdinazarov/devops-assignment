@@ -398,7 +398,7 @@ See [promql-queries.md](promql-queries.md) for comprehensive PromQL query exampl
 ### Monitoring Dashboard
 
 <!-- TODO: Add custom monitoring dashboard screenshot -->
-![Monitoring Dashboard](docs/images/Screenshot%202026-01-24%20at%2023.08.50.png)
+![Monitoring Dashboard](docs/images/Screenshot%202026-01-25%20at%2017.31.04.png)
 ![Monitoring Dashboard](docs/images/Screenshot%202026-01-24%20at%2023.09.09.png)
 
 *Example Prometheus/Grafana dashboard showing application metrics*
